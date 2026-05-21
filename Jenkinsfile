@@ -12,21 +12,26 @@ spec:
   containers:
   - name: python
     image: python:3.7
-    command:
-    - cat
+    command: ["cat"]
     tty: true
   - name: docker
-    image: docker
-    command:
-    - cat
+    image: docker:latest
+    command: ["cat"]
     tty: true
     volumeMounts:
-    - mountPath: /var/run/docker.sock
-      name: docker-sock
+    - name: docker-socket
+      mountPath: /var/run/docker.sock
+  - name: dind
+    image: docker:24-dind
+    command: ["dockerd", "--host=unix:///var/run/docker.sock", "--host=tcp://0.0.0.0:2375"]
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: docker-socket
+      mountPath: /var/run
   volumes:
-  - name: docker-sock
-    hostPath:
-      path: /var/run/docker.sock
+  - name: docker-socket
+    emptyDir: {}
 """
         }
     }
