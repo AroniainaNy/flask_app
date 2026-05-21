@@ -1,8 +1,8 @@
 pipeline {
-    agent {
-        kubernetes {
-            label 'jenkins-agent-my-app'
-            yaml """
+  agent {
+    kubernetes {
+      label 'jenkins-agent-my-app'
+      yaml """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,47 +10,42 @@ metadata:
     component: ci
 spec:
   containers:
-  - name: python
-    image: python:3.7
-    command: ["cat"]
-    tty: true
-  - name: docker
-    image: docker:latest
-    command: ["cat"]
-    tty: true
-    volumeMounts:
-    - name: docker-socket
-      mountPath: /var/run/docker.sock
-  - name: dind
-    image: docker:24-dind
-    command: ["dockerd", "--host=unix:///var/run/docker.sock", "--host=tcp://0.0.0.0:2375"]
-    securityContext:
-      privileged: true
-    volumeMounts:
-    - name: docker-socket
-      mountPath: /var/run
+    - name: python
+      image: python:3.7
+      command:
+        - cat
+      tty: true
+    - name: docker
+      image: docker
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-sock
   volumes:
-  - name: docker-socket
-    emptyDir: {}
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
 """
-        }
     }
-    stages {
-        stage('Test python') {
-            steps {
-                container('python') {
-                    sh "pip install -r requirements.txt"
-                    sh "python test.py"
-                }
-            }
+  }
+  stages {
+    stage('Test python') {
+      steps {
+        container('python') {
+          sh "pip install -r requirements.txt"
+          sh "python test.py"
         }
-        stage('Build image') {
-            steps {
-                container('docker') {
-                    sh "docker build -t localhost:4000/pythontest:latest ."
-                    sh "docker push localhost:4000/pythontest:latest"
-                }
-            }
-        }
+      }
     }
+    stage('Build image') {
+      steps {
+        container('docker') {
+          sh "docker build -t localhost:4000/pythontest:latest ."
+          sh "docker push localhost:4000/pythontest:latest"
+        }
+      }
+    }
+  }
 }
