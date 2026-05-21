@@ -16,7 +16,7 @@ spec:
     - cat
     tty: true
   - name: docker
-    image: docker
+    image: docker:20.10
     command:
     - cat
     tty: true
@@ -45,8 +45,8 @@ spec:
         stage('Build image') {
             steps {
                 container('docker') {
-                    sh "docker build -t localhost:4000/pythontest:latest ."
-                    sh "docker push localhost:4000/pythontest:latest"
+                    sh "DOCKER_HOST=tcp://host.docker.internal:2375 docker build -t localhost:4000/pythontest:latest ."
+                    sh "DOCKER_HOST=tcp://host.docker.internal:2375 docker push localhost:4000/pythontest:latest"
                 }
             }
         }
