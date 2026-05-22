@@ -8,4 +8,4 @@ RUN chmod a+x app.py test.py && \
 ENV FLASK_APP app.py
 EXPOSE 5000
 USER flask
-CMD ["./app.py"]
+CMD ["python", "app.py"]
